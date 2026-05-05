@@ -129,7 +129,10 @@ fn main() -> Result<()> {
         // See https://github.com/rust-lang/cargo/issues/9661.
         //
         // Cargo defaults to the `debug` profile.
-        let cargo_full_profile = env::var("CARGO_FULL_PROFILE").unwrap_or(String::from("debug"));
+        // If CARGO_FULL_PROFILE is not set, use PROFILE (which is always "debug" or "release")
+        let cargo_full_profile = env::var("CARGO_FULL_PROFILE")
+            .or_else(|_| env::var("PROFILE"))
+            .unwrap_or(String::from("debug"));
         let target_dir =
             app_target_dir(&cargo_full_profile).expect("Could not get app target directory");
         copy_windows_assets(&target_dir);
