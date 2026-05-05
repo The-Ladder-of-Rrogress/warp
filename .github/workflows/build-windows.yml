@@ -1,0 +1,45 @@
+name: Build Windows Binary
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Cargo registry
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build warp-oss
+        run: cargo build --release --bin warp-oss
+
+      - name: Copy Windows assets
+        run: |
+          $target = "target\release"
+          Copy-Item "app\assets\windows\x64\conpty.dll" $target
+          Copy-Item "app\assets\windows\x64\dxcompiler.dll" $target
+          Copy-Item "app\assets\windows\x64\dxil.dll" $target
+          New-Item -ItemType Directory -Force -Path "$target\x64"
+          Copy-Item "app\assets\windows\x64\OpenConsole.exe" "$target\x64"
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwarp-windows-x64
+          path: |
+            target/release/warp-oss.exe
+            target/release/conpty.dll
+            target/release/dxcompiler.dll
+            target/release/dxil.dll
+            target/release/x64/OpenConsole.exe
+          retention-days: 90
