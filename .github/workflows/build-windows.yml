@@ -20,6 +20,9 @@ jobs:
       - name: Cache Cargo registry
         uses: Swatinem/rust-cache@v2
 
+      - name: Install protoc
+        run: choco install protoc -y --no-progress
+
       - name: Build warp-oss
         run: cargo build --release --bin warp-oss
 
